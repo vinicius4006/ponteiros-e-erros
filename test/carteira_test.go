@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/vinicius4006/ponteiros-e-erros/entity"
@@ -12,13 +13,19 @@ func TestCarteira(t *testing.T) {
 		t.Helper()
 		resultado := carteira.Saldo()
 		if resultado != esperado {
-			t.Errorf("resultado %s, esperado %s", resultado.String(), esperado.String())
+			t.Errorf("resultado %s, esperado %s", resultado, esperado)
 		}
 	}
-	confirmaErro := func(t *testing.T, erro error) {
+	confirmaErro := func(t *testing.T, valor error, esperado string) {
 		t.Helper()
-		if erro == nil {
-			t.Error("Esperava um erro mas nenhum ocorreu")
+		if valor == nil {
+			t.Fatal("Esperava um erro mas nenhum ocorreu")
+		}
+
+		resultado := valor.Error()
+
+		if resultado != esperado {
+			t.Errorf("resultado %s, esperado %s", resultado, esperado)
 		}
 	}
 	t.Run("Depositar", func(t *testing.T) {
@@ -30,8 +37,10 @@ func TestCarteira(t *testing.T) {
 	t.Run("Retirar", func(t *testing.T) {
 		carteira := entity.Carteira{}
 		carteira.Depositar(entity.Bitcoin(20))
-		carteira.Retirar(10)
-
+		err := carteira.Retirar(10)
+		if err != nil {
+			fmt.Println(err)
+		}
 		confirmaSaldo(t, carteira, entity.Bitcoin(10))
 	})
 
@@ -44,7 +53,7 @@ func TestCarteira(t *testing.T) {
 
 		confirmaSaldo(t, carteira, saldoInicial)
 
-		confirmaErro(t, erro)
+		confirmaErro(t, erro, entity.ErroSaldoInsuficiente.Error())
 
 	})
 
